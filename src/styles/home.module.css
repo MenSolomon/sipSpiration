@@ -1,0 +1,254 @@
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+.container {
+  background-color: red;
+  height: 750vh;
+  width: 100vw;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 0.008fr 0.072fr 0.23fr 0.318fr 0.1fr 0.172fr 0.2fr;
+  grid-template-areas: "navbar" "display" "story" "drinks" "blog" "review" "footer";
+}
+
+.section {
+  padding: 1vh 5vw 1vh 5vw;
+}
+
+.navbar {
+  grid-area: navbar;
+  background-color: firebrick;
+  display: grid;
+  grid-template-columns: 0.82fr 0.18fr;
+  grid-template-areas: "none icon";
+}
+
+.displayImage {
+  grid-area: display;
+  background-color: gold;
+  background-image: url(../assets/images/background1.jpg);
+  background-size: cover;
+}
+
+.storyInfo {
+  grid-area: story;
+  background-color: blue;
+  display: grid;
+  grid-template-rows: 0.33fr 0.33fr 0.34fr;
+  grid-template-areas: "intro" "image" "solution";
+}
+
+.drinkShowcase {
+  grid-area: drinks;
+  background-color: aqua;
+}
+
+.blogPage {
+  grid-area: blog;
+  background-color: teal;
+  padding-top: 5vh;
+  display: grid;
+  grid-template-rows: 0.8fr 0.2fr;
+  grid-template-areas: "none" "button";
+}
+
+.reviewPage {
+  grid-area: review;
+  background-color: navy;
+}
+
+.footer {
+  grid-area: footer;
+  background-color: orangered;
+  padding-top: 5vh;
+}
+
+.navIcon {
+  grid-area: icon;
+  background-color: black;
+}
+
+.storyIntro {
+  grid-area: intro;
+  background-color: green;
+  padding-top: 15vh;
+}
+.storyIntro h1,
+.storySolution h1 {
+  font-style: italic;
+  color: #a59b89;
+}
+
+.storyIntro p,
+.storySolution p {
+  font-size: 1.3em;
+}
+
+.storyImage {
+  grid-area: image;
+  background-color: yellow;
+  padding-left: 12vw;
+  padding-top: 6vh;
+}
+
+.storyImage img {
+  width: 250px;
+  filter: brightness(0.9);
+}
+
+.storySolution {
+  grid-area: solution;
+  background-color: indianred;
+}
+
+.blogPage h5,
+.blogPage h1 {
+  text-align: center;
+}
+
+.blogPage img {
+  width: 360px;
+}
+
+.blogPage p {
+  text-align: center;
+  line-height: 1.4;
+  font-size: 1.2em;
+}
+
+.blogPage div:first-child {
+  grid-area: none;
+  /* background-color: gray; */
+}
+
+.blogPage div:last-child {
+  grid-area: button;
+  /* background-color: red; */
+  /* place-content: center; */
+  display: grid;
+  place-items: center;
+  padding-bottom: 6vh;
+}
+
+.blogPage button {
+  width: 35vw;
+  height: 6vh;
+  border-radius: 5px;
+}
+
+.carousel {
+  width: 90vw;
+
+  height: 50%;
+  background-color: red;
+  /* color: var(--logoColor); */
+}
+
+.footer img {
+  width: 300px;
+  margin-left: 6vw;
+  margin-bottom: 4vh;
+}
+
+.button1 {
+  display: grid;
+  place-content: center;
+  margin-bottom: 2vh;
+}
+
+.footer h2 {
+  margin-bottom: 3vh;
+}
+
+.footer .button {
+  width: 45vw;
+  height: 7vh;
+  display: grid;
+  grid-template-columns: 0.3fr 0.7fr;
+  grid-template-rows: 0.5fr 0.5fr;
+  grid-template-areas: "image head" "image body";
+}
+
+.first {
+  grid-area: image;
+  background-color: green;
+  /* padding-right: 5vw; */
+}
+
+/* .first img {
+  width: 20vw;
+} */
+
+.second {
+  grid-area: head;
+  background-color: blue;
+  padding-left: 1.4vw;
+}
+
+.third {
+  grid-area: body;
+  background-color: yellow;
+  padding-left: 1.4vw;
+}
+
+.footerMenu {
+  display: grid;
+  place-content: center;
+  list-style-type: none;
+  margin-bottom: 5vh;
+  margin-top: 4vh;
+  font-size: 1.3em;
+}
+
+.footerNewsLetter {
+  text-align: center;
+  list-style-type: none;
+  font-size: 1.3em;
+}
+
+.footerMenu li:first-child,
+.footerNewsLetter li:first-child {
+  font-style: italic;
+  margin-bottom: 1.5vh;
+  font-size: 1.1em;
+}
+
+.footerNewsLetter li:nth-child(2) {
+  margin-bottom: 2vh;
+}
+
+.newLetterSignUp {
+  /* width: 100vw; */
+  height: 5vh;
+  background-color: blue;
+  display: grid;
+  grid-template-columns: 0.7fr 0.3fr;
+  grid-template-areas: "input button";
+  margin-bottom: 6vh;
+}
+
+.newLetterSignUp input {
+  grid-area: input;
+  font-size: 1.1em;
+  padding-left: 2vw;
+}
+
+.newLetterSignUp button {
+  grid-area: button;
+  font-size: 1.1em;
+}
+
+.button2 {
+  margin-bottom: 10vh;
+}
+.carousels {
+  width: 90vw;
+  height: 30%;
+  background-color: red;
+  /* color: var(--logoColor); */
+}
