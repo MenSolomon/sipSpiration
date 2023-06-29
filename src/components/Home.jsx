@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import css from "../styles/home.module.css";
 import russia from "../assets/images/russia.png";
 import riffs from "../assets/images/riffs.png";
@@ -8,6 +8,8 @@ import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import google from "../assets/images/google-play.png";
 import apple from "../assets/images/apple.png";
+import "../styles/animation.css";
+import MixModal from "../modals/mixModal";
 
 const Home = () => {
   const responsive = {
@@ -30,11 +32,1036 @@ const Home = () => {
     },
   };
 
+  // ** Animate Menu button on mobile devices **
+  const [number, setNumber] = useState(1);
+
+  const [slideAnimate, setSlideAnimate] = useState("");
+
+  const slideMenu = () => {
+    setNumber(number + 1);
+    if (number % 2 == 0) {
+      setSlideAnimate(`popUpMenuAnimate`);
+    } else {
+      setSlideAnimate(``);
+    }
+  };
+  // End of animate menu
+
+  //********************************************************************************************* */
+  // ****************** BEGINNING OF COCKTAIL DATA EXTRACTION FROM API ***************************
+  //********************************************************************************************* */
+  //********************************************************************************************* */
+
+  const [cocktailData, setCocktailData] = useState([]);
+  let one_Level_Cocktail_Data = [];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const firstExtractCocktail = [];
+
+      const fetchPromises = [];
+
+      for (let i = 97; i < 123; i++) {
+        try {
+          const response = fetch(
+            `https://www.thecocktaildb.com/api/json/v1/1/search.php?f=${String.fromCharCode(
+              i
+            )}`
+          );
+
+          fetchPromises.push(response);
+        } catch (error) {
+          // console.log("Error:", error);
+        }
+      }
+
+      try {
+        const responses = await Promise.all(fetchPromises);
+
+        for (const response of responses) {
+          const data = await response.json();
+          firstExtractCocktail.push(data);
+        }
+
+        // console.log(firstExtractCocktail);
+        setCocktailData(firstExtractCocktail);
+      } catch (error) {
+        console.log("Error:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+  // console.log("big", cocktailData.flat());
+  cocktailData.map((data) =>
+    data?.drinks !== null
+      ? data?.drinks.map((res) => one_Level_Cocktail_Data.push(res))
+      : ""
+  );
+  console.log("Combined Array", one_Level_Cocktail_Data);
+
+  // **************************GENERATING RANDOM COCKTAIL ***************************************
+  //**********************************************************************************************
+
+  const [randomCocktail, setRandomCocktail] = useState([]);
+
+  useEffect(() => {
+    const fetchRandomCocktail = async () => {
+      try {
+        const response = await fetch(
+          "https://www.thecocktaildb.com/api/json/v1/1/random.php"
+        );
+        const data = await response.json();
+        setRandomCocktail(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchRandomCocktail();
+  }, []);
+
+  console.log("rand", randomCocktail);
+  // ***** END OF COCKTAIL GENERATION *****
+  //******************************************/
+
+  // ********** NAMES OF ALL DRINKS ************
+  //******************************************* */
+  const tempDrinkNames = [];
+  cocktailData.map((data) =>
+    data.drinks !== null
+      ? tempDrinkNames.push(data?.drinks.map((res) => res?.strDrink))
+      : ""
+  );
+  const namesofAllDrinks = [].concat.apply([], tempDrinkNames);
+  console.log("names", namesofAllDrinks);
+  // ********** END OF NAMES OF ALL DRINKS ************
+  //******************************************* */
+
+  // ********** TOTAL INGREDIENTSThere are 579 ************
+  //******************************************* */
+  let one_level_ingredients = [];
+  let namesOfIngredient = [];
+  // EXTRACTING the Names of ingredients from each drink an placing them in an array regardless of duplication
+  one_Level_Cocktail_Data.map((data) => {
+    if (data != null) {
+      for (let i = 0; i <= 15; i++) {
+        if (data[`strIngredient${i}`] != null) {
+          one_level_ingredients.push(data[`strIngredient${i}`]);
+        }
+      }
+    }
+  });
+
+  // namesOfIngredient = [...new Set(one_level_ingredients)];
+
+  //Removing Duplicated Ingredient name without being case sensitive
+  namesOfIngredient = one_level_ingredients.filter(
+    (value, index, self) =>
+      index === self.findIndex((v) => v.toLowerCase() === value.toLowerCase())
+  );
+  // Sorting data in descending order
+  namesOfIngredient = namesOfIngredient.sort();
+  // removing any empty string from the array
+  namesOfIngredient = namesOfIngredient.filter((value) => value !== "");
+  console.log(namesOfIngredient);
+
+  // ************* END OF DATA RETRIEVAL AND GROUPIN ******
+  // ********** START OF DRINK DETAILS PAGE *******
+
+  // const startMix = () => {
+  //   if (itemValue1 !== "") {
+  //     selectedIngredients.push(itemValue1);
+  //   }
+
+  //   if (itemValue2 !== "") {
+  //     selectedIngredients.push(itemValue2);
+  //   }
+
+  //   if (itemValue3 !== "") {
+  //     selectedIngredients.push(itemValue3);
+  //   }
+  //   if (itemValue4 !== "") {
+  //     selectedIngredients.push(itemValue4);
+  //   }
+  //   if (itemValue5 !== "") {
+  //     selectedIngredients.push(itemValue5);
+  //   }
+  //   if (itemValue6 !== "") {
+  //     selectedIngredients.push(itemValue6);
+  //   }
+
+  //   // console.log(selectedIngredients[0].replace(/\s+/g, "") + "SSSAS");
+
+  //   // The code below in a the logic the mix generator
+  //   // HOW it works
+  //   // Each select ingredient in the array (selectedIngredients) is iterated through the coctailData array
+  //   // which contains every drink with each ingredient...
+  //   // The ingredient is the compared with the first 6 ingredients if there is a match
+  //   // the that particular drink is suggested
+  //   // However the order of suggesstion depends on which the cocktail with the most ingredient match
+  //   for (let i = 0; i <= selectedIngredients.length; i++) {
+  //     cocktailData.map((data) =>
+  //       data?.drinks === null
+  //         ? ""
+  //         : data?.drinks.map((data1, index) => {
+  //             if (
+  //               String(selectedIngredients[i])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //               String(selectedIngredients[i])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient2)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //               String(selectedIngredients[i])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient3)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //               String(selectedIngredients[i])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient4)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //               String(selectedIngredients[i])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient5)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //               String(selectedIngredients[i])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient6).toLowerCase().replace(/\s+/g, "")
+  //             ) {
+  //               // const newItems = [...option6];
+
+  //               // newItems.push({
+  //               //   drinkName: data1.strDrink,
+  //               //   instructions: data1.strInstructions,
+  //               //   ingredient1: data1.strIngredient1,
+  //               //   ingredient2: data1.strIngredient2,
+  //               //   ingredient3: data1.strIngredient3,
+  //               //   ingredient4: data1.strIngredient4,
+  //               //   ingredient5: data1.strIngredient5,
+  //               //   ingredient6: data1.strIngredient6,
+  //               //   measure1: data1.strMeasure1,
+  //               //   measure2: data1.strMeasure2,
+  //               //   measure3: data1.strMeasure3,
+  //               //   measure4: data1.strMeasure4,
+  //               //   measure5: data1.strMeasure5,
+  //               //   measure6: data1.strMeasure6,
+  //               // });
+
+  //               // setOption6(newItems);
+
+  //               tempOption6.push({
+  //                 drinkName: data1.strDrink,
+  //                 instructions: data1.strInstructions,
+  //                 ingredient1: data1.strIngredient1,
+  //                 ingredient2: data1.strIngredient2,
+  //                 ingredient3: data1.strIngredient3,
+  //                 ingredient4: data1.strIngredient4,
+  //                 ingredient5: data1.strIngredient5,
+  //                 ingredient6: data1.strIngredient6,
+  //                 measure1: data1.strMeasure1,
+  //                 measure2: data1.strMeasure2,
+  //                 measure3: data1.strMeasure3,
+  //                 measure4: data1.strMeasure4,
+  //                 measure5: data1.strMeasure5,
+  //                 measure6: data1.strMeasure6,
+  //                 drinkImage: data1.strDrinkThumb,
+  //               });
+
+  //               console.log(tempOption6);
+
+  //               setOption6(tempOption6);
+
+  //               console.log(
+  //                 ` %c *********** 6TH BEST OPTION******** (1 INGREDIENT MATCH) \n  ${index} ) ${
+  //                   data1.strIngredient1 !== null &&
+  //                   data1.strIngredient1 !== undefined
+  //                     ? data1.strIngredient1.toLowerCase()
+  //                     : "Ingredient doesnt Exist "
+  //                 } -----  ${selectedIngredients[i]
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "")}  \n ${data1.strDrink} \n ${
+  //                   data1.strInstructions
+  //                 } `,
+  //                 "color: RED"
+  //               );
+  //             }
+
+  //             // CHECKING ANY 2 INGREDIENT MATCH
+  //             if (
+  //               (String(selectedIngredients[i])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "")) &&
+  //               (String(selectedIngredients[i + 1])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, ""))
+  //             ) {
+  //               tempOption5.push({
+  //                 drinkName: data1.strDrink,
+  //                 instructions: data1.strInstructions,
+  //                 ingredient1: data1.strIngredient1,
+  //                 ingredient2: data1.strIngredient2,
+  //                 ingredient3: data1.strIngredient3,
+  //                 ingredient4: data1.strIngredient4,
+  //                 ingredient5: data1.strIngredient5,
+  //                 ingredient6: data1.strIngredient6,
+  //                 measure1: data1.strMeasure1,
+  //                 measure2: data1.strMeasure2,
+  //                 measure3: data1.strMeasure3,
+  //                 measure4: data1.strMeasure4,
+  //                 measure5: data1.strMeasure5,
+  //                 measure6: data1.strMeasure6,
+  //                 drinkImage: data1.strDrinkThumb,
+  //               });
+
+  //               console.log(tempOption5);
+
+  //               setOption5(tempOption5);
+
+  //               console.log(
+  //                 `%c ***** 5ND BEST OPTION****** (2 INGREDIENT MATCH) \n  ${index} ) ${
+  //                   data1.strIngredient1
+  //                 } -----  ${selectedIngredients[i]} and ${
+  //                   selectedIngredients[i + 1]
+  //                 }   \n ${data1.strDrink} \n ${data1.strInstructions} `,
+  //                 "color: blue"
+  //               );
+  //             }
+
+  //             // CHECKING FOR 3 INGREDIENT MATCH
+  //             if (
+  //               (String(selectedIngredients[i])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "")) &&
+  //               (String(selectedIngredients[i + 1])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "")) &&
+  //               (String(selectedIngredients[i + 2])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, ""))
+  //             ) {
+  //               tempOption4.push({
+  //                 drinkName: data1.strDrink,
+  //                 instructions: data1.strInstructions,
+  //                 ingredient1: data1.strIngredient1,
+  //                 ingredient2: data1.strIngredient2,
+  //                 ingredient3: data1.strIngredient3,
+  //                 ingredient4: data1.strIngredient4,
+  //                 ingredient5: data1.strIngredient5,
+  //                 ingredient6: data1.strIngredient6,
+  //                 measure1: data1.strMeasure1,
+  //                 measure2: data1.strMeasure2,
+  //                 measure3: data1.strMeasure3,
+  //                 measure4: data1.strMeasure4,
+  //                 measure5: data1.strMeasure5,
+  //                 measure6: data1.strMeasure6,
+  //                 drinkImage: data1.strDrinkThumb,
+  //               });
+
+  //               console.log(tempOption4);
+
+  //               setOption4(tempOption4);
+
+  //               console.log(
+  //                 `%c ***** 4th OPTION****** (3 INGREDIENT MATCH) \n  ${index} ) ${
+  //                   data1.strIngredient1
+  //                 } -----  ${selectedIngredients[i]} and ${
+  //                   selectedIngredients[i + 1]
+  //                 }   \n ${data1.strDrink} \n ${data1.strInstructions} `,
+  //                 "color: green"
+  //               );
+  //             }
+
+  //             /// CHECKING FOR 4 MATCHING ITEMS IN
+  //             if (
+  //               (String(selectedIngredients[i])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "")) &&
+  //               (String(selectedIngredients[i + 1])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "")) &&
+  //               (String(selectedIngredients[i + 2])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "")) &&
+  //               (String(selectedIngredients[i + 3])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 3])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 3])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 3])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 3])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 3])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, ""))
+  //             ) {
+  //               tempOption3.push({
+  //                 drinkName: data1.strDrink,
+  //                 instructions: data1.strInstructions,
+  //                 ingredient1: data1.strIngredient1,
+  //                 ingredient2: data1.strIngredient2,
+  //                 ingredient3: data1.strIngredient3,
+  //                 ingredient4: data1.strIngredient4,
+  //                 ingredient5: data1.strIngredient5,
+  //                 ingredient6: data1.strIngredient6,
+  //                 measure1: data1.strMeasure1,
+  //                 measure2: data1.strMeasure2,
+  //                 measure3: data1.strMeasure3,
+  //                 measure4: data1.strMeasure4,
+  //                 measure5: data1.strMeasure5,
+  //                 measure6: data1.strMeasure6,
+  //                 drinkImage: data1.strDrinkThumb,
+  //               });
+
+  //               console.log(tempOption3);
+
+  //               setOption3(tempOption3);
+
+  //               console.log(
+  //                 `%c ***** THE 3RD BEST OPTION (4 Ingredient Match) ****** \n  ${index} ) ${
+  //                   data1.strIngredient1
+  //                 } -----  ${selectedIngredients[i]} and ${
+  //                   selectedIngredients[i + 1]
+  //                 }   \n ${data1.strDrink} \n ${data1.strInstructions} `,
+  //                 "color: yellow"
+  //               );
+  //             }
+
+  //             /// search FOR 6
+  //             if (
+  //               (String(selectedIngredients[i])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "")) &&
+  //               (String(selectedIngredients[i + 1])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 1])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "")) &&
+  //               (String(selectedIngredients[i + 2])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 2])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "")) &&
+  //               (String(selectedIngredients[i + 3])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 3])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 3])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 3])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 3])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 3])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "")) &&
+  //               ////5
+  //               (String(selectedIngredients[i + 4])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 4])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 4])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 4])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 4])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 4])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "")) &&
+  //               ////6
+  //               (String(selectedIngredients[i + 5])
+  //                 .toLowerCase()
+  //                 .replace(/\s+/g, "") ===
+  //                 String(data1.strIngredient1)
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 5])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient2)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 5])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient3)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 5])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient4)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 5])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient5)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, "") ||
+  //                 String(selectedIngredients[i + 5])
+  //                   .toLowerCase()
+  //                   .replace(/\s+/g, "") ===
+  //                   String(data1.strIngredient6)
+  //                     .toLowerCase()
+  //                     .replace(/\s+/g, ""))
+  //             ) {
+  //               tempOption1.push({
+  //                 drinkName: data1.strDrink,
+  //                 instructions: data1.strInstructions,
+  //                 ingredient1: data1.strIngredient1,
+  //                 ingredient2: data1.strIngredient2,
+  //                 ingredient3: data1.strIngredient3,
+  //                 ingredient4: data1.strIngredient4,
+  //                 ingredient5: data1.strIngredient5,
+  //                 ingredient6: data1.strIngredient6,
+  //                 measure1: data1.strMeasure1,
+  //                 measure2: data1.strMeasure2,
+  //                 measure3: data1.strMeasure3,
+  //                 measure4: data1.strMeasure4,
+  //                 measure5: data1.strMeasure5,
+  //                 measure6: data1.strMeasure6,
+  //                 drinkImage: data1.strDrinkThumb,
+  //               });
+
+  //               console.log(tempOption1);
+
+  //               setOption1(tempOption1);
+
+  //               console.log(
+  //                 `%c ******** THE  VERY BEST OPTION****** (ALL 5 INGREDIENT MATCH) \n  ${index} ) ${
+  //                   data1.strIngredient1
+  //                 } -----  ${selectedIngredients[i]} and ${
+  //                   selectedIngredients[i + 1]
+  //                 }   \n ${data1.strDrink} \n ${data1.strInstructions} `,
+  //                 "color: pink"
+  //               );
+  //             }
+  //           })
+  //     );
+  //   }
+
+  //   // window.location.href = "/mixedDrinks";
+
+  //   // window.location.pathname = "/mixedDrinks";
+  // };
+
+  // let finalresults = option1.concat(option3, option4, option5, option6);
+
+  // ALGO TO REMOVE EVERY DUPLICATED VALUE FROM THE COMBINED ARRAY
+  // for (let j = 0; j < finalresults.length; j++) {
+  //   for (let i = 0; i < finalresults.length; i++) {
+  //     if (finalresults[j].drinkName === finalresults[i].drinkName && j !== i) {
+  //       finalresults[i] = "";
+  //     }
+  //   }
+  // }
+  // finalresults = finalresults.filter((str) => str !== "");
+
+  // console.log(finalresults);
+
+  // ******* MODAL SETTINGS **********
+  //************************************* */
+  const [isOpen, setIsOpen] = useState(false);
+
+  const setVisible = () => {
+    setIsOpen(true);
+  };
+
+  const modalStyle = {
+    backgroundColor: "black",
+    transform: "translate(-50px,-50px)",
+    width: "100vw",
+    height: "40vh",
+    position: "fixed",
+    left: "50vw",
+    top: "40vh",
+    zIndex: "1000",
+  };
+  // END OF MODAL SETTINGS
+
+  var selectionArray = [1];
+
+  const [dynNumb, setDynNumb] = useState(2);
+
+  const addItem = () => {
+    setDynNumb(dynNumb + 1);
+
+    if (selectionArray.length <= 5) {
+      selectionArray.push("added");
+    }
+
+    console.log(selectionArray);
+  };
+
   return (
     <div className={css.container}>
       <div className={`${css.navbar}`}>
+        {/* <img src={banner} /> */}
         <div className={css.navIcon}>
-          <img src={menu} />
+          <img className={css.menuImage} src={menu} onClick={slideMenu} />
+        </div>
+        <div
+          className={`${css.popUpMenu}  ${
+            number % 2 == 0 ? css.popUpMenuAnimate : css.disappearMenuAnimate
+          }`}
+          style={{
+            visibility:
+              number == 1 ? "hidden" : number % 2 == 0 ? "visible" : "",
+          }}
+        >
+          <ul>
+            <li>Drinks</li>
+            <li>Ingredients</li>
+          </ul>
+
+          <div className={css.newLetterSignUp}>
+            <input type="text" placeholder="Search for drinks "></input>
+            <button> Search </button>
+          </div>
         </div>
       </div>
       <div className={`${css.displayImage} ${css.section}`}> </div>
@@ -73,7 +1100,122 @@ const Home = () => {
             It’s just you, your booze, and page after page of solid cocktail
             recipes you can actually make, right this very instant.
           </p>
+
+          <div className={css.centeredButton}>
+            <button onClick={setVisible}> Mix Now </button>
+          </div>
         </div>
+
+        <MixModal
+          style={modalStyle}
+          open={isOpen}
+          closeModal={() => setIsOpen(false)}
+
+          // altClose={() => (isOpen === true ? setIsOpen(false) : null)}
+        >
+          <button onClick={addItem}>Add</button>
+
+          <ul
+            className={css.ingredientList}
+            style={{ listStyleType: "none", display: "flex", flexWrap: "wrap" }}
+          >
+            <li>
+              <select
+                className={css.select}
+                defaultValue="Select"
+                // value={itemValue1}
+                // onChange={handleIngredient1}
+              >
+                {namesOfIngredient.map((data) => (
+                  <option value={data}>{data}</option>
+                ))}
+              </select>
+
+              <button>Cancel </button>
+            </li>
+
+            <li style={{ display: dynNumb > 2 ? "block" : "none" }}>
+              <select
+                className={css.select}
+                defaultValue="Select"
+                // value={itemValue1}
+                // onChange={handleIngredient1}
+              >
+                {namesOfIngredient.map((data) => (
+                  <option value={data}>{data}</option>
+                ))}
+              </select>
+
+              <button>Cancel </button>
+            </li>
+
+            <li style={{ display: dynNumb > 3 ? "block" : "none" }}>
+              <select
+                className={css.select}
+                defaultValue="Select"
+                // value={itemValue1}
+                // onChange={handleIngredient1}
+              >
+                {namesOfIngredient.map((data) => (
+                  <option value={data}>{data}</option>
+                ))}
+              </select>
+
+              <button>Cancel </button>
+            </li>
+
+            <li style={{ display: dynNumb > 4 ? "block" : "none" }}>
+              <select
+                className={css.select}
+                defaultValue="Select"
+                // value={itemValue1}
+                // onChange={handleIngredient1}
+              >
+                {namesOfIngredient.map((data) => (
+                  <option value={data}>{data}</option>
+                ))}
+              </select>
+
+              <button>Cancel </button>
+            </li>
+
+            <li style={{ display: dynNumb > 5 ? "block" : "none" }}>
+              <select
+                className={css.select}
+                defaultValue="Select"
+                // value={itemValue1}
+                // onChange={handleIngredient1}
+              >
+                {namesOfIngredient.map((data) => (
+                  <option value={data}>{data}</option>
+                ))}
+              </select>
+
+              <button>Cancel </button>
+            </li>
+
+            <li style={{ display: dynNumb > 6 ? "block" : "none" }}>
+              <select
+                className={css.select}
+                defaultValue="Select"
+                // value={itemValue1}
+                // onChange={handleIngredient1}
+              >
+                {namesOfIngredient.map((data) => (
+                  <option value={data}>{data}</option>
+                ))}
+              </select>
+
+              <button
+                onClick={() => {
+                  setDynNumb(dynNumb - 2);
+                }}
+              >
+                Cancel{" "}
+              </button>
+            </li>
+          </ul>
+        </MixModal>
       </div>
 
       <div className={`${css.drinkShowcase} ${css.section}`}> </div>

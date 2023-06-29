@@ -1,0 +1,15 @@
+/* .popUpMenu-Animate {
+  animation: popmenu 0.7s forwards ease-in-out;
+}
+
+@keyframes popmenu {
+  0% {
+    display: block;
+    left: -50vw;
+  }
+
+  100% {
+    display: block;
+    left: 0vw;
+  }
+} */
