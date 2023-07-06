@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import css from "../styles/home.module.css";
 import russia from "../assets/images/russia.png";
 import riffs from "../assets/images/riffs.png";
@@ -10,6 +10,9 @@ import google from "../assets/images/google-play.png";
 import apple from "../assets/images/apple.png";
 import "../styles/animation.css";
 import MixModal from "../modals/mixModal";
+import { useDispatch } from "react-redux";
+import { deliverDrink } from "../slices/sendDrink";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const responsive = {
@@ -31,6 +34,8 @@ const Home = () => {
       items: 1,
     },
   };
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // ** Animate Menu button on mobile devices **
   const [number, setNumber] = useState(1);
@@ -121,7 +126,7 @@ const Home = () => {
     fetchRandomCocktail();
   }, []);
 
-  console.log("rand", randomCocktail);
+  // console.log("rand", randomCocktail);
   // ***** END OF COCKTAIL GENERATION *****
   //******************************************/
 
@@ -134,7 +139,7 @@ const Home = () => {
       : ""
   );
   const namesofAllDrinks = [].concat.apply([], tempDrinkNames);
-  console.log("names", namesofAllDrinks);
+  // console.log("names", namesofAllDrinks);
   // ********** END OF NAMES OF ALL DRINKS ************
   //******************************************* */
 
@@ -164,7 +169,7 @@ const Home = () => {
   namesOfIngredient = namesOfIngredient.sort();
   // removing any empty string from the array
   namesOfIngredient = namesOfIngredient.filter((value) => value !== "");
-  console.log(namesOfIngredient);
+  // console.log(namesOfIngredient);
 
   // ************* END OF DATA RETRIEVAL AND GROUPIN ******
   // ********** START OF DRINK DETAILS PAGE *******
@@ -1015,7 +1020,7 @@ const Home = () => {
     backgroundColor: "black",
     transform: "translate(-50px,-50px)",
     width: "100vw",
-    height: "40vh",
+    height: "90vh",
     position: "fixed",
     left: "50vw",
     top: "40vh",
@@ -1023,19 +1028,139 @@ const Home = () => {
   };
   // END OF MODAL SETTINGS
 
-  var selectionArray = [1];
+  // var selectionArray = [1];
 
-  const [dynNumb, setDynNumb] = useState(2);
+  // const [dynNumb, setDynNumb] = useState(2);
 
-  const addItem = () => {
-    setDynNumb(dynNumb + 1);
+  // const addItem = () => {
+  //   setDynNumb(dynNumb + 1);
 
-    if (selectionArray.length <= 5) {
-      selectionArray.push("added");
+  //   if (selectionArray.length <= 5) {
+  //     selectionArray.push("added");
+  //   }
+
+  //   console.log(selectionArray);
+  // };
+
+  const [val, setVal] = useState([]);
+  const [upVal, setupVal] = useState([]);
+
+  const handleadd = (e, i) => {
+    if (val.length < 8) {
+      const holder = [...val, []];
+      setVal(holder);
     }
-
-    console.log(selectionArray);
   };
+
+  const handleChange = (changeValue, i) => {
+    const inputdata = [...val];
+    inputdata[i] = changeValue.target.value;
+    setVal(inputdata);
+    setupVal(inputdata);
+  };
+
+  const divRefs = useRef([]);
+
+  const handleDelete = (i) => {
+    const deleteVal = [...val];
+    deleteVal.splice(i, 1);
+    setupVal(deleteVal);
+
+    const element = divRefs.current[i];
+    if (element) {
+      // Manipulate the element here
+      element.style.display = "none";
+    }
+  };
+
+  console.log(upVal, "dataaa");
+  console.log(one_Level_Cocktail_Data, "cocktail Data");
+
+  const [possibleDrinks, setPossibleDrinks] = useState([]);
+
+  const [dpChk, setDpChk] = useState(0);
+
+  const startMix = () => {
+    let matchingCount = 0;
+    let matchedDrinks = [];
+
+    one_Level_Cocktail_Data.map((data) => {
+      for (let x = 1; x <= 15; x++) {
+        for (let i = 0; i < upVal.length; i++) {
+          if (
+            String(upVal[i]).toLowerCase().replace(/\s+/g, "") ==
+            String(data["strIngredient" + x])
+              .toLowerCase()
+              .replace(/\s+/g, "")
+          ) {
+            // console.log(data.strDrink, "=", val[i], data["strIngredient" + x]);
+            const key = "ingredient" + i;
+            matchedDrinks.push({ name: data.strDrink, [key]: upVal[i] });
+          }
+        }
+      }
+    });
+
+    // console.log(matchedDrinks);
+
+    // this is used to group all the findings in to an object
+    const groupedDrinks = matchedDrinks.reduce((result, drink) => {
+      const existingDrink = result.find((d) => d.name === drink.name);
+
+      if (existingDrink) {
+        const keys = Object.keys(drink).filter((key) => key !== "name");
+        for (const key of keys) {
+          existingDrink[key] = drink[key];
+        }
+      } else {
+        result.push(drink);
+      }
+
+      return result;
+    }, []);
+
+    const newGroupedDrinks = groupedDrinks
+      .sort((a, b) => Object.keys(b).length - Object.keys(a).length)
+      .map((item, index) => ({
+        ...item,
+        rank: index + 1,
+      }));
+
+    // You can again filter based on the drink with the most ingredient matched
+
+    // console.log(newGroupedDrinks);
+
+    const gotten = one_Level_Cocktail_Data.filter((item) =>
+      newGroupedDrinks.some(
+        (subsetItem) =>
+          subsetItem.name.toLowerCase() === item.strDrink.toLowerCase()
+      )
+    );
+
+    const updatedGotten = gotten.map((item) => {
+      const matchingSubset = newGroupedDrinks.find(
+        (subsetItem) =>
+          subsetItem.name.toLowerCase() === item.strDrink.toLowerCase()
+      );
+      return {
+        ...item,
+        rank: matchingSubset ? matchingSubset.rank : undefined,
+      };
+    });
+
+    const finalGenerated = updatedGotten.sort((a, b) => a.rank - b.rank);
+
+    setPossibleDrinks(finalGenerated);
+
+    setDpChk(1);
+  };
+
+  dispatch(deliverDrink(possibleDrinks));
+
+  if (dpChk == 1) {
+    navigate("/mixedDrinks");
+    setDpChk(0);
+  }
 
   return (
     <div className={css.container}>
@@ -1113,107 +1238,30 @@ const Home = () => {
 
           // altClose={() => (isOpen === true ? setIsOpen(false) : null)}
         >
-          <button onClick={addItem}>Add</button>
+          <button onClick={() => handleadd()}>Add</button>
+          <button onClick={startMix}>Start mix</button>
 
           <ul
             className={css.ingredientList}
             style={{ listStyleType: "none", display: "flex", flexWrap: "wrap" }}
           >
-            <li>
-              <select
-                className={css.select}
-                defaultValue="Select"
-                // value={itemValue1}
-                // onChange={handleIngredient1}
-              >
-                {namesOfIngredient.map((data) => (
-                  <option value={data}>{data}</option>
-                ))}
-              </select>
+            {val.map((data, i) => {
+              return (
+                <li className={i} ref={(el) => (divRefs.current[i] = el)}>
+                  <select
+                    className={css.select}
+                    defaultValue="Select"
+                    onChange={(e) => handleChange(e, i)}
+                  >
+                    {namesOfIngredient.map((data) => (
+                      <option value={data}>{data}</option>
+                    ))}
+                  </select>
 
-              <button>Cancel </button>
-            </li>
-
-            <li style={{ display: dynNumb > 2 ? "block" : "none" }}>
-              <select
-                className={css.select}
-                defaultValue="Select"
-                // value={itemValue1}
-                // onChange={handleIngredient1}
-              >
-                {namesOfIngredient.map((data) => (
-                  <option value={data}>{data}</option>
-                ))}
-              </select>
-
-              <button>Cancel </button>
-            </li>
-
-            <li style={{ display: dynNumb > 3 ? "block" : "none" }}>
-              <select
-                className={css.select}
-                defaultValue="Select"
-                // value={itemValue1}
-                // onChange={handleIngredient1}
-              >
-                {namesOfIngredient.map((data) => (
-                  <option value={data}>{data}</option>
-                ))}
-              </select>
-
-              <button>Cancel </button>
-            </li>
-
-            <li style={{ display: dynNumb > 4 ? "block" : "none" }}>
-              <select
-                className={css.select}
-                defaultValue="Select"
-                // value={itemValue1}
-                // onChange={handleIngredient1}
-              >
-                {namesOfIngredient.map((data) => (
-                  <option value={data}>{data}</option>
-                ))}
-              </select>
-
-              <button>Cancel </button>
-            </li>
-
-            <li style={{ display: dynNumb > 5 ? "block" : "none" }}>
-              <select
-                className={css.select}
-                defaultValue="Select"
-                // value={itemValue1}
-                // onChange={handleIngredient1}
-              >
-                {namesOfIngredient.map((data) => (
-                  <option value={data}>{data}</option>
-                ))}
-              </select>
-
-              <button>Cancel </button>
-            </li>
-
-            <li style={{ display: dynNumb > 6 ? "block" : "none" }}>
-              <select
-                className={css.select}
-                defaultValue="Select"
-                // value={itemValue1}
-                // onChange={handleIngredient1}
-              >
-                {namesOfIngredient.map((data) => (
-                  <option value={data}>{data}</option>
-                ))}
-              </select>
-
-              <button
-                onClick={() => {
-                  setDynNumb(dynNumb - 2);
-                }}
-              >
-                Cancel{" "}
-              </button>
-            </li>
+                  <button onClick={() => handleDelete(i)}> X </button>
+                </li>
+              );
+            })}
           </ul>
         </MixModal>
       </div>

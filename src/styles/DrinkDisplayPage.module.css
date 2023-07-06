@@ -1,0 +1,71 @@
+:root {
+  --primaryColor: #181717;
+  --textColor: white;
+  --buttonColor: black;
+}
+
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+.container {
+  height: 100vh;
+  width: 100vw;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 0.4fr 0.55fr 0.05fr;
+  grid-template-areas: "image" "info" "seemore";
+}
+
+.drinkImage {
+  grid-area: image;
+  background-color: blue;
+}
+
+.infoArea {
+  grid-area: info;
+  grid-template-columns: 1fr;
+  grid-template-rows: 0.1fr 0.5fr 0.4fr;
+  grid-template-areas: "head" "summary" "method";
+  background-color: var(--primaryColor);
+  color: var(--textColor);
+  padding-left: 4vw;
+  padding-right: 4vw;
+}
+
+.seeMore {
+  grid-area: seemore;
+  background-color: var(--primaryColor);
+  border: none;
+  display: grid;
+  place-content: center;
+}
+
+.seeMore button {
+  width: 36vw;
+  margin-bottom: 2vh;
+  height: 3vh;
+}
+
+h1 {
+  margin-bottom: 2vh;
+  margin-top: 1.5vh;
+}
+
+table {
+  /* width: 100vw; */
+  margin-bottom: 2vh;
+}
+
+th {
+  text-align: left;
+}
+
+th:nth-child(1),
+tr:nth-child(1) {
+  width: 55vw;
+}
