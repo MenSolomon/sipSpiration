@@ -13,6 +13,7 @@ import MixModal from "../modals/mixModal";
 import { useDispatch } from "react-redux";
 import { deliverDrink } from "../slices/sendDrink";
 import { useNavigate } from "react-router-dom";
+import Navbar from "./Navbar";
 
 const Home = () => {
   const responsive = {
@@ -1164,31 +1165,7 @@ const Home = () => {
 
   return (
     <div className={css.container}>
-      <div className={`${css.navbar}`}>
-        {/* <img src={banner} /> */}
-        <div className={css.navIcon}>
-          <img className={css.menuImage} src={menu} onClick={slideMenu} />
-        </div>
-        <div
-          className={`${css.popUpMenu}  ${
-            number % 2 == 0 ? css.popUpMenuAnimate : css.disappearMenuAnimate
-          }`}
-          style={{
-            visibility:
-              number == 1 ? "hidden" : number % 2 == 0 ? "visible" : "",
-          }}
-        >
-          <ul>
-            <li>Drinks</li>
-            <li>Ingredients</li>
-          </ul>
-
-          <div className={css.newLetterSignUp}>
-            <input type="text" placeholder="Search for drinks "></input>
-            <button> Search </button>
-          </div>
-        </div>
-      </div>
+      <Navbar />
       <div className={`${css.displayImage} ${css.section}`}> </div>
       <div className={`${css.storyInfo} ${css.section}`}>
         <div className={css.storyIntro}>

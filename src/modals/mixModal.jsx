@@ -10,9 +10,9 @@ const MixModal = ({ children, open, closeModal, altClose }) => {
     // top: 0,
     // bottom: 0,
     width: "100vw",
-    height: "70vh",
+    height: "100vh",
     left: "0vw",
-    top: "20vh",
+    top: "0vh",
 
     backgroundColor: "rgba(19,0,0,1.9)",
     zIndex: 1000,
@@ -24,10 +24,6 @@ const MixModal = ({ children, open, closeModal, altClose }) => {
   return ReactDom.createPortal(
     <div style={overLay} onClick={altClose}>
       <img style={{ float: "right" }} src={close} onClick={closeModal} />
-
-      {/* <button type="button" onClick={closeModal}>
-        Close
-      </button> */}
 
       {children}
     </div>,
