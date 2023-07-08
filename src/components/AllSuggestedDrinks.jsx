@@ -15,6 +15,7 @@ const AllSuggestedDrinks = () => {
 
   console.log("WE ARE HERE", selectedDrinks);
 
+  //PAGINATION SETTINGS
   const [page, setPage] = useState(1);
   const [pageCounter, setPageCounter] = useState(0);
 
@@ -56,6 +57,7 @@ const AllSuggestedDrinks = () => {
 
   const groupedDrinks = groupArray(selectedDrinks, 10);
   console.log("groupEEE", groupedDrinks);
+  /////////// END OF PAGINATION SETTINGS
 
   // ******* MODAL SETTINGS **********
   //************************************* */

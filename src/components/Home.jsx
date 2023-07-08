@@ -11,7 +11,12 @@ import apple from "../assets/images/apple.png";
 import "../styles/animation.css";
 import MixModal from "../modals/mixModal";
 import { useDispatch } from "react-redux";
-import { deliverDrink } from "../slices/sendDrink";
+import {
+  deliverCategory,
+  deliverDrink,
+  deliverAllDrinks,
+  deliverAlcoholStats,
+} from "../slices/sendDrink";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 
@@ -171,6 +176,66 @@ const Home = () => {
   // removing any empty string from the array
   namesOfIngredient = namesOfIngredient.filter((value) => value !== "");
   // console.log(namesOfIngredient);
+
+  // ********** NAMES OF ALL CATEGORIES ************
+  //******************************************* */
+  const tempDrinkCategories = [];
+  cocktailData.map((data) =>
+    data.drinks !== null
+      ? tempDrinkCategories.push(data?.drinks.map((res) => res?.strCategory))
+      : ""
+  );
+  const namesofAllCategories = [].concat.apply([], tempDrinkCategories);
+
+  console.log("ALLLL CATEGORIES", namesofAllCategories);
+
+  //Removing Duplicated Ingredient name without being case sensitive
+  let sortedCatNames = namesofAllCategories.filter(
+    (value, index, self) =>
+      index === self.findIndex((v) => v.toLowerCase() === value.toLowerCase())
+  );
+  // Sorting data in descending order
+  sortedCatNames = sortedCatNames.sort();
+  // removing any empty string from the array
+  sortedCatNames = sortedCatNames.filter((value) => value !== "");
+  console.log(sortedCatNames);
+
+  dispatch(deliverCategory(sortedCatNames));
+
+  dispatch(deliverAllDrinks(one_Level_Cocktail_Data));
+
+  // console.log("names", namesofAllDrinks);
+  // ********** END OF NAMES OF ALL CATEGORIES ************
+  //******************************************* */
+
+  // **********Extracting Alcohol Status ************
+  //******************************************* */
+  const tempAlcoholStatus = [];
+  cocktailData.map((data) =>
+    data.drinks !== null
+      ? tempAlcoholStatus.push(data?.drinks.map((res) => res?.strAlcoholic))
+      : ""
+  );
+  const namesofAllAlcoholStatus = [].concat.apply([], tempAlcoholStatus);
+
+  console.log("ALLLL ALCOHOLS", namesofAllAlcoholStatus);
+
+  //Removing Duplicated Ingredient name without being case sensitive
+  let sortedAlcStatus = namesofAllAlcoholStatus.filter(
+    (value, index, self) =>
+      index === self.findIndex((v) => v.toLowerCase() === value.toLowerCase())
+  );
+  // Sorting data in descending order
+  sortedAlcStatus = sortedAlcStatus.sort();
+  // removing any empty string from the array
+  sortedAlcStatus = sortedAlcStatus.filter((value) => value !== "");
+  console.log(sortedAlcStatus);
+
+  dispatch(deliverAlcoholStats(sortedAlcStatus));
+
+  // console.log("names", namesofAllDrinks);
+  // ********** END OF  Alcohol Status  ************
+  //******************************************* */
 
   // ************* END OF DATA RETRIEVAL AND GROUPIN ******
   // ********** START OF DRINK DETAILS PAGE *******

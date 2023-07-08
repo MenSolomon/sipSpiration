@@ -27,7 +27,7 @@
 }
 .pagination {
   grid-area: pagination;
-  background-color: teal;
+  /* background-color: teal; */
   display: grid;
   place-content: center;
 }

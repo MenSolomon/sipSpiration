@@ -12,7 +12,7 @@ import "../styles/animation.css";
 import MixModal from "../modals/mixModal";
 import { useDispatch } from "react-redux";
 import { deliverDrink } from "../slices/sendDrink";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   // ** Animate Menu button on mobile devices **
@@ -45,7 +45,13 @@ const Navbar = () => {
         }}
       >
         <ul>
-          <li>Drinks</li>
+          <Link
+            style={{ textDecoration: "none", color: "black" }}
+            to="/allDrinks"
+          >
+            {" "}
+            <li>Drinks</li>{" "}
+          </Link>
           <li>Ingredients</li>
         </ul>
 

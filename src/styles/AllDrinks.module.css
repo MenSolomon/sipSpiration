@@ -1,0 +1,64 @@
+:root {
+  --primaryColor: #181717;
+  --textColor: white;
+  --buttonColor: black;
+}
+
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+.container {
+  height: 180vh;
+  width: 100vw;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 6vh 125vh 80vh;
+  grid-template-areas: "navbar" "body" "footer";
+}
+
+.navbar {
+  grid-area: navbar;
+}
+
+.infoArea {
+  grid-area: body;
+  grid-template-columns: 1fr;
+  grid-template-rows: 10vh 100vh;
+  grid-template-areas: "filter" "Render";
+}
+
+.filter {
+  grid-area: filter;
+  /* background-color: aqua; */
+  margin-top: 2vh;
+  margin-bottom: 4vh;
+}
+
+ul:first-child {
+  margin-bottom: 0.8vh;
+}
+
+select,
+input,
+button {
+  height: 3vh;
+}
+
+.render {
+  grid-area: Render;
+  background-color: rgb(233, 250, 250);
+}
+
+.footer {
+  grid-area: footer;
+}
+
+.filter ul {
+  display: flex;
+  list-style-type: none;
+}
